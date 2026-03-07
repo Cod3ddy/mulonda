@@ -1,0 +1,58 @@
+@startuml
+actor User
+participant "main.go" as Main
+participant "cmd.Execute" as Root
+participant "parseGlobalFlags" as Parse
+participant "config.Load" as Config
+participant "watchlist.Load" as Watchlist
+participant "matcher.MatchRule" as Matcher
+participant "isInteractiveSession" as TTY
+participant "prompter.Confirm" as Prompt
+participant "executor.Command + cmd.Run" as Exec
+participant "OS Command" as OS
+
+User -> Main : run mulonda <cmd> <args>
+Main -> Root : Execute()
+Root -> Parse : parseGlobalFlags(os.Args[1:])
+Parse --> Root : configPath, watchlistPath, passthrough, err
+
+alt passthrough command (not management)
+  Root -> Config : Load(configPath)
+  Config --> Root : cfg
+
+  Root -> Watchlist : Load(watchlistPath)
+  Watchlist --> Root : rules
+
+  Root -> Matcher : MatchRule(command, commandArgs, rules)
+  Matcher --> Root : matchedRule?, matched
+
+  alt matched == true
+    Root -> TTY : isInteractiveSession()
+    TTY --> Root : true/false
+
+    alt interactive
+      Root -> Prompt : Confirm(message)
+      Prompt --> Root : yes/no
+      alt no
+        Root --> Main : error (aborted)
+      else yes
+      end
+    else non-interactive
+      alt cfg.non_interactive.passthrough == false
+        Root --> Main : error (blocked)
+      else passthrough true
+      end
+    end
+  end
+
+  Root -> Exec : Command(command, args).Run()
+  Exec -> OS : exec real binary
+  OS --> Exec : exit status/output
+  Exec --> Root : nil/error
+
+else management command or parse error
+  Root -> Root : rootCmd.Execute() (Cobra)
+end
+
+Root --> Main : return
+@enduml

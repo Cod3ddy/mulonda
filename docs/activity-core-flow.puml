@@ -1,0 +1,65 @@
+@startuml
+start
+
+:Read CLI args;
+:parseGlobalFlags(args);
+
+if (Parse error?) then (yes)
+  :Fallback to Cobra rootCmd.Execute();
+  stop
+else (no)
+endif
+
+if (passthrough args exist AND\nfirst token is not management command?) then (yes)
+  :command = passthrough[0];
+  :commandArgs = passthrough[1..n];
+
+  :Load config (config.Load);
+  if (Config load failed?) then (yes)
+    :Return error;
+    stop
+  else (no)
+  endif
+
+  :Load watchlist (watchlist.Load);
+  if (Watchlist load failed?) then (yes)
+    :Return error;
+    stop
+  else (no)
+  endif
+
+  :Match rule (matcher.MatchRule);
+  if (Rule matched?) then (yes)
+    if (Interactive session?) then (yes)
+      :Build warning message;
+      :Prompt user (prompter.Confirm);
+      if (Confirmed?) then (yes)
+      else (no)
+        :Abort command;
+        stop
+      endif
+    else (no)
+      if (non_interactive.passthrough?) then (yes)
+      else (no)
+        :Block command;
+        stop
+      endif
+    endif
+  else (no)
+  endif
+
+  :Create exec cmd (executor.Command);
+  :Bind stdin/stdout/stderr;
+  :Run real command;
+  if (Execution error?) then (yes)
+    :Return execution error;
+  else (no)
+    :Return success;
+  endif
+  stop
+else (no)
+  :Run Cobra rootCmd.Execute();
+  stop
+endif
+
+@enduml

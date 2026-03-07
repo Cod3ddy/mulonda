@@ -1,0 +1,44 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+actor User
+
+rectangle "Shell Environment" {
+  component "Shell Alias\nrm -> mulonda rm" as ShellAlias
+}
+
+package "Mulonda Binary" {
+  component "main.go\ncmd.Execute()" as Main
+
+  package "cmd" {
+    component "root.Execute()\nparseGlobalFlags()\nexecuteProxy()" as Root
+    component "Management Commands\nadd/list/config/install/uninstall" as Mgmt
+  }
+
+  package "internal" {
+    component "config.Load()" as Config
+    component "watchlist.Load()" as Watchlist
+    component "matcher.MatchRule()" as Matcher
+    component "prompter.Confirm()" as Prompter
+    component "executor.Command()" as Executor
+  }
+}
+
+component "OS Process Execution\n(PATH + binary resolution)" as OSExec
+component "External Command\n(rm/chmod/mv/cp/...)" as External
+
+User --> ShellAlias : types command
+ShellAlias --> Main : invokes mulonda
+Main --> Root : route execution
+
+Root --> Mgmt : if management subcommand
+Root --> Config : load runtime config
+Root --> Watchlist : load merged rules
+Root --> Matcher : evaluate command and args
+Root --> Prompter : confirm (interactive)
+Root --> Executor : create process
+Executor --> OSExec : exec command
+OSExec --> External : run real binary
+
+@enduml

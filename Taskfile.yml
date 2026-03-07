@@ -1,0 +1,97 @@
+version: '3'
+
+vars:
+  BINARY: mulonda
+  BIN_DIR: ./bin
+  CONFIG_FILE: mulonda.yaml
+  WATCHLIST_FILE: watchlist.yaml
+  CLI_ARGS: ""
+
+silent: false
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  build:
+    desc: Build mulonda binary into ./bin
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - go build -o {{.BIN_DIR}}/{{.BINARY}} .
+
+  run:
+    desc: Run mulonda with optional CLI_ARGS, e.g. task run CLI_ARGS="list"
+    cmds:
+      - go run . {{.CLI_ARGS}}
+
+  test:
+    desc: Run all Go tests
+    cmds:
+      - go test ./...
+
+  tidy:
+    desc: Tidy go modules
+    cmds:
+      - go mod tidy
+
+  fmt:
+    desc: Format Go source files
+    cmds:
+      - gofmt -w .
+
+  vet:
+    desc: Run go vet checks
+    cmds:
+      - go vet ./...
+
+  check:
+    desc: Run standard quality checks
+    cmds:
+      - task: fmt
+      - task: tidy
+      - task: vet
+      - task: test
+
+  clean:
+    desc: Remove local build outputs
+    cmds:
+      - rm -rf {{.BIN_DIR}}
+
+  init-config:
+    desc: Create local config file if missing
+    status:
+      - test -f {{.CONFIG_FILE}}
+    cmds:
+      - cp config.example.yml {{.CONFIG_FILE}}
+
+  list:
+    desc: Show effective watchlist
+    cmds:
+      - go run . --watchlist {{.WATCHLIST_FILE}} list
+
+  add:
+    desc: Add a rule via ARGS, e.g. task add ARGS="chmod 777"
+    vars:
+      ARGS: ""
+    preconditions:
+      - sh: test -n "{{.ARGS}}"
+        msg: "Usage: task add ARGS=\"<command pattern>\""
+    cmds:
+      - go run . --watchlist {{.WATCHLIST_FILE}} add {{.ARGS}}
+
+  config-show:
+    desc: Print effective config
+    cmds:
+      - go run . --config {{.CONFIG_FILE}} config show
+
+  install:
+    desc: Run install subcommand stub
+    cmds:
+      - go run . install
+
+  uninstall:
+    desc: Run uninstall subcommand stub
+    cmds:
+      - go run . uninstall

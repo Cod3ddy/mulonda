@@ -1,0 +1,74 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package "cmd" {
+  class RootCommand {
+    +Execute()
+    -executeProxy(configPath, watchlistPath, args)
+    -parseGlobalFlags(args)
+    -isManagementCommand(name)
+    -isInteractiveSession()
+  }
+}
+
+package "internal.config" {
+  class Config {
+    +TimeoutSeconds : int
+    +NonInteractive : NonInteractiveConfig
+  }
+
+  class NonInteractiveConfig {
+    +Passthrough : bool
+  }
+
+  class ConfigLoader {
+    +Load(path) Config
+  }
+}
+
+package "internal.watchlist" {
+  class Rule {
+    +Command : string
+    +FlagsContain : []string
+    +ArgsMatch : []string
+    +MinArgs : int
+    +Warning : string
+  }
+
+  class WatchlistLoader {
+    +Load(path) []Rule
+    +Add(path, command)
+  }
+}
+
+package "internal.matcher" {
+  class Matcher {
+    +MatchRule(command, args, rules) (Rule, bool)
+    -ruleMatches(command, args, rule) bool
+    -containsAnyArg(args, candidates) bool
+  }
+}
+
+package "internal.prompter" {
+  class Prompter {
+    +Confirm(message) bool
+  }
+}
+
+package "internal.executor" {
+  class Executor {
+    +Command(name, args) *exec.Cmd
+  }
+}
+
+RootCommand ..> ConfigLoader : uses
+RootCommand ..> WatchlistLoader : uses
+RootCommand ..> Matcher : uses
+RootCommand ..> Prompter : uses
+RootCommand ..> Executor : uses
+
+Config "1" *-- "1" NonInteractiveConfig
+WatchlistLoader ..> Rule : returns []Rule
+Matcher ..> Rule : evaluates
+
+@enduml

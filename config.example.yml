@@ -1,0 +1,5 @@
+# Example Mulonda config
+timeout_seconds: 30
+
+non_interactive:
+  passthrough: true

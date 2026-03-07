@@ -1,0 +1,15 @@
+mulonda.yaml
+mulonda.yml
+
+# Build output
+bin/
+
+# Binaries and executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.a
+*.out
+*.test

@@ -24,6 +24,15 @@ and asks for confirmation before potentially destructive operations.`,
 var configFile string
 var watchlistFile string
 
+var (
+	loadConfigFn       = config.Load
+	loadWatchlistFn    = watchlist.Load
+	matchRuleFn        = matcher.MatchRule
+	confirmPromptFn    = prompter.Confirm
+	commandFactoryFn   = executor.Command
+	isInteractiveFn    = isInteractiveSession
+)
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -50,25 +59,29 @@ func executeProxy(configPath, watchlistPath string, args []string) error {
 	command := args[0]
 	commandArgs := args[1:]
 
-	cfg, err := config.Load(configPath)
+	cfg, err := loadConfigFn(configPath)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	rules, err := watchlist.Load(watchlistPath)
+	rules, err := loadWatchlistFn(watchlistPath)
 	if err != nil {
 		return fmt.Errorf("load watchlist: %w", err)
 	}
 
-	if rule, matched := matcher.MatchRule(command, commandArgs, rules); matched {
+	if rule, matched := matchRuleFn(command, commandArgs, rules); matched {
 		warning := strings.TrimSpace(rule.Warning)
 		if warning == "" {
 			warning = "Watched command requires confirmation"
 		}
 
-		if isInteractiveSession() {
-			message := fmt.Sprintf("mulonda: %s %s\nwarning: %s\nProceed?", command, strings.Join(commandArgs, " "), warning)
-			if !prompter.Confirm(strings.TrimSpace(message)) {
+		if isInteractiveFn() {
+			fullCommand := command
+			if len(commandArgs) > 0 {
+				fullCommand = fmt.Sprintf("%s %s", command, strings.Join(commandArgs, " "))
+			}
+			message := fmt.Sprintf("mulonda: %s\nwarning: %s\nProceed?", fullCommand, warning)
+			if !confirmPromptFn(strings.TrimSpace(message)) {
 				return fmt.Errorf("aborted: command not executed")
 			}
 		} else if !cfg.NonInteractive.Passthrough {
@@ -76,7 +89,7 @@ func executeProxy(configPath, watchlistPath string, args []string) error {
 		}
 	}
 
-	cmd := executor.Command(command, commandArgs...)
+	cmd := commandFactoryFn(command, commandArgs...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

@@ -51,7 +51,7 @@ func TestParseGlobalFlags(t *testing.T) {
 			name:          "config equals form parsed",
 			args:          []string{"--config=custom.yml"},
 			wantConfig:    "custom.yml",
-			wantWatchlist: "watchlist.yaml",
+			wantWatchlist: "data/watchlist.yaml",
 		},
 		{
 			name:          "watchlist equals form parsed",
@@ -68,14 +68,14 @@ func TestParseGlobalFlags(t *testing.T) {
 			name:          "delimiter passes through remaining args",
 			args:          []string{"--", "echo", "hello"},
 			wantConfig:    "mulonda.yaml",
-			wantWatchlist: "watchlist.yaml",
+			wantWatchlist: "data/watchlist.yaml",
 			wantPass:      []string{"echo", "hello"},
 		},
 		{
 			name:          "non management command becomes passthrough",
 			args:          []string{"echo", "hello"},
 			wantConfig:    "mulonda.yaml",
-			wantWatchlist: "watchlist.yaml",
+			wantWatchlist: "data/watchlist.yaml",
 			wantPass:      []string{"echo", "hello"},
 		},
 		{
@@ -95,7 +95,7 @@ func TestParseGlobalFlags(t *testing.T) {
 			name:          "management command name passes through from parser",
 			args:          []string{"list"},
 			wantConfig:    "mulonda.yaml",
-			wantWatchlist: "watchlist.yaml",
+			wantWatchlist: "data/watchlist.yaml",
 			wantPass:      []string{"list"},
 		},
 	}

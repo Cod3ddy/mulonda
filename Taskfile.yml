@@ -4,7 +4,7 @@ vars:
   BINARY: mulonda
   BIN_DIR: ./bin
   CONFIG_FILE: mulonda.yaml
-  WATCHLIST_FILE: watchlist.yaml
+  WATCHLIST_FILE: data/watchlist.yaml
   CLI_ARGS: ""
 
 silent: false

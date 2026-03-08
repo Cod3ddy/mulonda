@@ -13,3 +13,12 @@ rules:
       warning: Setting world-writable permissions
     - command: cd
     - command: git
+    - command: lokal
+      flags_contain:
+        - -R
+        - -f
+      args_match:
+        - "777"
+        - a+rwx
+      min_args: 2
+      warning: Local man is tired just go to sleep

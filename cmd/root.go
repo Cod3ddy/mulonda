@@ -51,8 +51,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", "mulonda.yaml", "Path to YAML config file")
-	rootCmd.PersistentFlags().StringVar(&watchlistFile, "watchlist", "watchlist.yaml", "Path to YAML watchlist file")
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", config.DefaultConfigPath, "Path to YAML config file")
+	rootCmd.PersistentFlags().StringVar(&watchlistFile, "watchlist", config.DefaultWatchlistPath, "Path to YAML watchlist file")
 }
 
 func executeProxy(configPath, watchlistPath string, args []string) error {
@@ -102,8 +102,8 @@ func executeProxy(configPath, watchlistPath string, args []string) error {
 }
 
 func parseGlobalFlags(args []string) (configPath, watchPath string, passthrough []string, err error) {
-	configPath = "mulonda.yaml"
-	watchPath = "watchlist.yaml"
+	configPath = config.DefaultConfigPath
+	watchPath = config.DefaultWatchlistPath
 
 	for i := 0; i < len(args); i++ {
 		token := args[i]

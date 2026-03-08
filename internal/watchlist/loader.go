@@ -2,9 +2,12 @@ package watchlist
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
+	"github.com/cod3ddy/mulonda/internal/config"
 	"github.com/spf13/viper"
 )
 
@@ -30,13 +33,12 @@ func Load(path string) ([]Rule, error) {
 	v := viper.New()
 	v.SetConfigType("yaml")
 	if path == "" {
-		path = "watchlist.yaml"
+		path = config.DefaultWatchlistPath
 	}
 	v.SetConfigFile(path)
 
 	if err := v.ReadInConfig(); err != nil {
-		var notFound viper.ConfigFileNotFoundError
-		if errors.As(err, &notFound) {
+		if isConfigMissing(err) {
 			return rules, nil
 		}
 		return nil, err
@@ -69,8 +71,17 @@ func Load(path string) ([]Rule, error) {
 
 // Add appends a command rule to the YAML watchlist file if missing.
 func Add(path, command string) error {
+	return AddRule(path, parseInputToRule(command))
+}
+
+// AddRule appends or updates a structured rule in the YAML watchlist.
+func AddRule(path string, rule Rule) error {
 	if path == "" {
-		path = "watchlist.yaml"
+		path = config.DefaultWatchlistPath
+	}
+	rule = normalizeRule(rule)
+	if rule.Command == "" {
+		return nil
 	}
 
 	v := viper.New()
@@ -79,8 +90,7 @@ func Add(path, command string) error {
 
 	f := fileRules{}
 	if err := v.ReadInConfig(); err != nil {
-		var notFound viper.ConfigFileNotFoundError
-		if !errors.As(err, &notFound) {
+		if !isConfigMissing(err) {
 			return err
 		}
 	} else {
@@ -100,14 +110,14 @@ func Add(path, command string) error {
 
 	f.Commands = nil
 
-	newRule := parseInputToRule(command)
-	if newRule.Command == "" {
-		return nil
-	}
-	f.Rules = upsertRule(f.Rules, newRule)
+	f.Rules = upsertRule(f.Rules, rule)
 
 	v.Set("rules", f.Rules)
 	v.Set("commands", nil)
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
 
 	if err := v.WriteConfigAs(path); err != nil {
 		var alreadyExists viper.ConfigFileAlreadyExistsError
@@ -167,4 +177,9 @@ func normalizeRule(rule Rule) Rule {
 	rule.Command = strings.TrimSpace(rule.Command)
 	rule.Warning = strings.TrimSpace(rule.Warning)
 	return rule
+}
+
+func isConfigMissing(err error) bool {
+	var notFound viper.ConfigFileNotFoundError
+	return errors.As(err, &notFound) || errors.Is(err, os.ErrNotExist)
 }

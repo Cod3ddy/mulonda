@@ -25,12 +25,12 @@ var configFile string
 var watchlistFile string
 
 var (
-	loadConfigFn       = config.Load
-	loadWatchlistFn    = watchlist.Load
-	matchRuleFn        = matcher.MatchRule
-	confirmPromptFn    = prompter.Confirm
-	commandFactoryFn   = executor.Command
-	isInteractiveFn    = isInteractiveSession
+	loadConfigFn     = config.Load
+	loadWatchlistFn  = watchlist.Load
+	matchRuleFn      = matcher.MatchRule
+	confirmPromptFn  = prompter.Confirm
+	commandFactoryFn = executor.Command
+	isInteractiveFn  = isInteractiveSession
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.

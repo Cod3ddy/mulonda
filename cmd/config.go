@@ -24,6 +24,7 @@ var configShowCmd = &cobra.Command{
 
 		fmt.Printf("timeout_seconds: %d\n", cfg.TimeoutSeconds)
 		fmt.Printf("non_interactive.passthrough: %t\n", cfg.NonInteractive.Passthrough)
+		fmt.Printf("files.watchlist_dir: %s\n", cfg.Files.WatchlistDirectory)
 		return nil
 	},
 }

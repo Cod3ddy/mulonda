@@ -10,6 +10,7 @@ import (
 type Config struct {
 	TimeoutSeconds int                  `mapstructure:"timeout_seconds"`
 	NonInteractive NonInteractiveConfig `mapstructure:"non_interactive"`
+	Files          *FileConfig          `mapstructure:"files"`
 }
 
 type NonInteractiveConfig struct {

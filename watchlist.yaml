@@ -1,10 +1,15 @@
-# Mulonda user watchlist with structured rules.
 rules:
-  - command: rm
-    flags_contain: ["-rf", "-r", "-f"]
-    min_args: 2
-    warning: "Recursive delete: {{file_count}} files"
-
-  - command: chmod
-    args_match: ["777", "a+rwx"]
-    warning: "Setting world-writable permissions"
+    - command: rm
+      flags_contain:
+        - -rf
+        - -r
+        - -f
+      min_args: 2
+      warning: 'Recursive delete: {{file_count}} files'
+    - command: chmod
+      args_match:
+        - "777"
+        - a+rwx
+      warning: Setting world-writable permissions
+    - command: cd
+    - command: git

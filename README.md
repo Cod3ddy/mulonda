@@ -2,6 +2,8 @@
 
 # mulonda
 
+![Mulonda Logo](docs/mulonda-logo.svg)
+
 > *Mulonda &mdash; from Tonga (Malawi), meaning "a guard."*
 
 A small  tool that intercepts shell commands and asks you before execution.

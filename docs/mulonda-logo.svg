@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <rect width="800" height="800" fill="#0b0f14"/>
+  <path
+    d="M400 110
+       L510 158
+       L510 285
+       Q510 375 400 422
+       Q290 375 290 285
+       L290 158 Z"
+    fill="#0b0f14"
+    stroke="#00FF88"
+    stroke-width="10"
+    stroke-linejoin="round"/>
+  <text
+    x="400"
+    y="300"
+    text-anchor="middle"
+    font-family="JetBrains Mono, monospace"
+    font-size="80"
+    font-weight="700"
+    fill="#00FF88"
+  >&gt;_</text>
+  <text
+    x="400"
+    y="510"
+    text-anchor="middle"
+    font-family="JetBrains Mono, monospace"
+    font-size="86"
+    font-weight="700"
+    letter-spacing="2"
+    fill="#00FF88"
+  >mulonda</text>
+  <text
+    x="400"
+    y="560"
+    text-anchor="middle"
+    font-family="JetBrains Mono, monospace"
+    font-size="22"
+    fill="#8a9199"
+  >Because rm -rf doesn't ask twice</text>
+  <line
+    x1="240"
+    y1="585"
+    x2="560"
+    y2="585"
+    stroke="#2a3232"
+    stroke-width="1.5"/>
+  <text
+    x="400"
+    y="620"
+    text-anchor="middle"
+    font-family="JetBrains Mono, monospace"
+    font-size="18"
+    fill="#5f6a6a"
+  >Lightweight shell guard for Linux</text>
+</svg>

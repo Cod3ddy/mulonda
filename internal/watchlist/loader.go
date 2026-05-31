@@ -130,17 +130,50 @@ func AddRule(path string, rule Rule) error {
 	return nil
 }
 
-func containsRule(rules []Rule, target Rule) bool {
-	for _, r := range rules {
-		if equalRule(r, target) {
-			return true
-		}
+// RemoveRule deletes all rules for command from the watchlist file.
+// Returns true if at least one rule was removed.
+func RemoveRule(path, command string) (bool, error) {
+	if path == "" {
+		path = config.DefaultWatchlistPath
 	}
-	return false
-}
+	command = strings.TrimSpace(command)
+	if command == "" {
+		return false, nil
+	}
 
-func equalRule(a, b Rule) bool {
-	return equalIdentity(a, b) && a.Warning == b.Warning
+	v := viper.New()
+	v.SetConfigType("yaml")
+	v.SetConfigFile(path)
+
+	f := fileRules{}
+	if err := v.ReadInConfig(); err != nil {
+		if isConfigMissing(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	if err := v.Unmarshal(&f); err != nil {
+		return false, err
+	}
+
+	filtered := f.Rules[:0]
+	removed := false
+	for _, r := range f.Rules {
+		if strings.TrimSpace(r.Command) == command {
+			removed = true
+			continue
+		}
+		filtered = append(filtered, r)
+	}
+
+	if !removed {
+		return false, nil
+	}
+
+	f.Rules = filtered
+	v.Set("rules", f.Rules)
+	v.Set("commands", nil)
+	return true, v.WriteConfig()
 }
 
 func equalIdentity(a, b Rule) bool {

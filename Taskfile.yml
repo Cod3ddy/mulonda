@@ -17,9 +17,12 @@ tasks:
 
   build:
     desc: Build mulonda binary into ./bin
+    vars:
+      VERSION:
+        sh: git describe --tags --always --dirty 2>/dev/null || echo "dev"
     cmds:
       - mkdir -p {{.BIN_DIR}}
-      - go build -o {{.BIN_DIR}}/{{.BINARY}} .
+      - go build -ldflags "-s -w -X main.version={{.VERSION}}" -o {{.BIN_DIR}}/{{.BINARY}} .
 
   run:
     desc: Run mulonda with optional CLI_ARGS, e.g. task run CLI_ARGS="list"

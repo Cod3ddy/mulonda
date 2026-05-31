@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -72,7 +73,7 @@ func TestExecuteProxy_MatchedInteractive_ConfirmYesExecutes(t *testing.T) {
 	}
 	isInteractiveFn = func() bool { return true }
 	confirmPromptFn = func(message string) bool { return true }
-	commandFactoryFn = func(name string, args ...string) *exec.Cmd {
+	commandFactoryFn = func(ctx context.Context, name string, args ...string) *exec.Cmd {
 		return exec.Command("bash", "-lc", "true")
 	}
 
@@ -96,7 +97,7 @@ func TestExecuteProxy_MatchedInteractive_ConfirmNoAborts(t *testing.T) {
 	confirmPromptFn = func(message string) bool { return false }
 
 	commandCalled := false
-	commandFactoryFn = func(name string, args ...string) *exec.Cmd {
+	commandFactoryFn = func(ctx context.Context, name string, args ...string) *exec.Cmd {
 		commandCalled = true
 		return exec.Command("bash", "-lc", "true")
 	}
@@ -121,7 +122,7 @@ func TestExecuteProxy_MatchedNonInteractive_PassthroughTrueExecutes(t *testing.T
 		return watchlist.Rule{Command: "danger"}, true
 	}
 	isInteractiveFn = func() bool { return false }
-	commandFactoryFn = func(name string, args ...string) *exec.Cmd {
+	commandFactoryFn = func(ctx context.Context, name string, args ...string) *exec.Cmd {
 		return exec.Command("bash", "-lc", "true")
 	}
 
@@ -168,7 +169,7 @@ func TestExecuteProxy_UnmatchedCommandExecutesWithoutPrompt(t *testing.T) {
 		return true
 	}
 
-	commandFactoryFn = func(name string, args ...string) *exec.Cmd {
+	commandFactoryFn = func(ctx context.Context, name string, args ...string) *exec.Cmd {
 		return exec.Command("bash", "-lc", "true")
 	}
 
@@ -197,7 +198,7 @@ func TestExecuteProxy_BlankWarningUsesFallbackAndFormatsZeroArgsPrompt(t *testin
 		return true
 	}
 
-	commandFactoryFn = func(name string, args ...string) *exec.Cmd {
+	commandFactoryFn = func(ctx context.Context, name string, args ...string) *exec.Cmd {
 		return exec.Command("bash", "-lc", "true")
 	}
 
@@ -220,7 +221,7 @@ func TestExecuteProxy_CommandFailureIsWrapped(t *testing.T) {
 	matchRuleFn = func(command string, args []string, rules []watchlist.Rule) (watchlist.Rule, bool) {
 		return watchlist.Rule{}, false
 	}
-	commandFactoryFn = func(name string, args ...string) *exec.Cmd {
+	commandFactoryFn = func(ctx context.Context, name string, args ...string) *exec.Cmd {
 		return exec.Command("bash", "-lc", "exit 7")
 	}
 
@@ -241,7 +242,7 @@ func TestExecuteProxy_ForwardsStdIOToCommand(t *testing.T) {
 	matchRuleFn = func(command string, args []string, rules []watchlist.Rule) (watchlist.Rule, bool) {
 		return watchlist.Rule{}, false
 	}
-	commandFactoryFn = func(name string, args ...string) *exec.Cmd {
+	commandFactoryFn = func(ctx context.Context, name string, args ...string) *exec.Cmd {
 		return exec.Command("bash", "-lc", "cat")
 	}
 

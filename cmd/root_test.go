@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/cod3ddy/mulonda/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -51,12 +52,12 @@ func TestParseGlobalFlags(t *testing.T) {
 			name:          "config equals form parsed",
 			args:          []string{"--config=custom.yml"},
 			wantConfig:    "custom.yml",
-			wantWatchlist: "data/watchlist.yaml",
+			wantWatchlist: config.DefaultWatchlistPath,
 		},
 		{
 			name:          "watchlist equals form parsed",
 			args:          []string{"--watchlist=custom-watch.yml"},
-			wantConfig:    "mulonda.yaml",
+			wantConfig:    config.DefaultConfigPath,
 			wantWatchlist: "custom-watch.yml",
 		},
 		{
@@ -67,15 +68,15 @@ func TestParseGlobalFlags(t *testing.T) {
 		{
 			name:          "delimiter passes through remaining args",
 			args:          []string{"--", "echo", "hello"},
-			wantConfig:    "mulonda.yaml",
-			wantWatchlist: "data/watchlist.yaml",
+			wantConfig:    config.DefaultConfigPath,
+			wantWatchlist: config.DefaultWatchlistPath,
 			wantPass:      []string{"echo", "hello"},
 		},
 		{
 			name:          "non management command becomes passthrough",
 			args:          []string{"echo", "hello"},
-			wantConfig:    "mulonda.yaml",
-			wantWatchlist: "data/watchlist.yaml",
+			wantConfig:    config.DefaultConfigPath,
+			wantWatchlist: config.DefaultWatchlistPath,
 			wantPass:      []string{"echo", "hello"},
 		},
 		{
@@ -94,8 +95,8 @@ func TestParseGlobalFlags(t *testing.T) {
 		{
 			name:          "management command name passes through from parser",
 			args:          []string{"list"},
-			wantConfig:    "mulonda.yaml",
-			wantWatchlist: "data/watchlist.yaml",
+			wantConfig:    config.DefaultConfigPath,
+			wantWatchlist: config.DefaultWatchlistPath,
 			wantPass:      []string{"list"},
 		},
 	}
@@ -124,6 +125,7 @@ func TestIsManagementCommand(t *testing.T) {
 		want bool
 	}{
 		{name: "add", cmd: "add", want: true},
+		{name: "remove", cmd: "remove", want: true},
 		{name: "list", cmd: "list", want: true},
 		{name: "install", cmd: "install", want: true},
 		{name: "uninstall", cmd: "uninstall", want: true},

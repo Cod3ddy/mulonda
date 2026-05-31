@@ -1,8 +1,11 @@
 package executor
 
-import "os/exec"
+import (
+	"context"
+	"os/exec"
+)
 
-// Command proxies execution to the underlying system binary.
-func Command(name string, args ...string) *exec.Cmd {
-	return exec.Command(name, args...)
+// Command returns an exec.Cmd bound to ctx — the process is killed when ctx is done.
+func Command(ctx context.Context, name string, args ...string) *exec.Cmd {
+	return exec.CommandContext(ctx, name, args...)
 }

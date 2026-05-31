@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -21,6 +22,7 @@ type NonInteractiveConfig struct {
 func Default() Config {
 	cfg := Config{TimeoutSeconds: 30}
 	cfg.NonInteractive.Passthrough = true
+	cfg.Files = &FileConfig{WatchlistDirectory: DefaultWatchlistPath}
 	return cfg
 }
 
@@ -41,15 +43,23 @@ func Load(path string) (Config, error) {
 	}
 
 	if err := v.ReadInConfig(); err != nil {
-		var notFound viper.ConfigFileNotFoundError
-		if !errors.As(err, &notFound) {
+		if !isConfigMissing(err) {
+			return cfg, err
+		}
+	} else {
+		if err := v.Unmarshal(&cfg); err != nil {
 			return cfg, err
 		}
 	}
 
-	if err := v.Unmarshal(&cfg); err != nil {
-		return cfg, err
+	if cfg.Files == nil {
+		cfg.Files = &FileConfig{WatchlistDirectory: DefaultWatchlistPath}
 	}
 
 	return cfg, nil
+}
+
+func isConfigMissing(err error) bool {
+	var notFound viper.ConfigFileNotFoundError
+	return errors.As(err, &notFound) || errors.Is(err, os.ErrNotExist)
 }

@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/cod3ddy/mulonda/internal/config"
 	"github.com/cod3ddy/mulonda/internal/executor"
@@ -13,7 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "mulonda",
 	Short: "Guard dangerous shell commands with a confirmation prompt",
@@ -33,8 +34,12 @@ var (
 	isInteractiveFn  = isInteractiveSession
 )
 
+// SetVersion wires the build-time version string into the root command.
+func SetVersion(v string) {
+	rootCmd.Version = v
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	configPath, watchlistPath, passthroughArgs, parseErr := parseGlobalFlags(os.Args[1:])
 	if parseErr == nil && len(passthroughArgs) > 0 && !isManagementCommand(passthroughArgs[0]) {
@@ -89,7 +94,16 @@ func executeProxy(configPath, watchlistPath string, args []string) error {
 		}
 	}
 
-	cmd := commandFactoryFn(command, commandArgs...)
+	var ctx context.Context
+	var cancel context.CancelFunc
+	if cfg.TimeoutSeconds > 0 {
+		ctx, cancel = context.WithTimeout(context.Background(), time.Duration(cfg.TimeoutSeconds)*time.Second)
+	} else {
+		ctx, cancel = context.WithCancel(context.Background())
+	}
+	defer cancel()
+
+	cmd := commandFactoryFn(ctx, command, commandArgs...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -152,7 +166,7 @@ func parseGlobalFlags(args []string) (configPath, watchPath string, passthrough 
 
 func isManagementCommand(name string) bool {
 	switch name {
-	case "add", "list", "install", "uninstall", "config", "completion", "help":
+	case "add", "remove", "list", "install", "uninstall", "config", "completion", "help":
 		return true
 	default:
 		return false

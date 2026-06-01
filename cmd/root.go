@@ -13,6 +13,7 @@ import (
 	"github.com/cod3ddy/mulonda/internal/prompter"
 	"github.com/cod3ddy/mulonda/internal/watchlist"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var rootCmd = &cobra.Command{
@@ -135,8 +136,8 @@ func parseGlobalFlags(args []string) (configPath, watchPath string, passthrough 
 			continue
 		}
 
-		if strings.HasPrefix(token, "--config=") {
-			configPath = strings.TrimPrefix(token, "--config=")
+		if v, ok := strings.CutPrefix(token, "--config="); ok {
+			configPath = v
 			continue
 		}
 
@@ -149,8 +150,8 @@ func parseGlobalFlags(args []string) (configPath, watchPath string, passthrough 
 			continue
 		}
 
-		if strings.HasPrefix(token, "--watchlist=") {
-			watchPath = strings.TrimPrefix(token, "--watchlist=")
+		if v, ok := strings.CutPrefix(token, "--watchlist="); ok {
+			watchPath = v
 			continue
 		}
 
@@ -174,15 +175,5 @@ func isManagementCommand(name string) bool {
 }
 
 func isInteractiveSession() bool {
-	stdinInfo, err := os.Stdin.Stat()
-	if err != nil {
-		return false
-	}
-
-	stdoutInfo, err := os.Stdout.Stat()
-	if err != nil {
-		return false
-	}
-
-	return (stdinInfo.Mode()&os.ModeCharDevice) != 0 && (stdoutInfo.Mode()&os.ModeCharDevice) != 0
+	return term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd()))
 }
